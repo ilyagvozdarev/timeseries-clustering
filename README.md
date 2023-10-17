@@ -14,11 +14,10 @@
 
 ## Данные
 
-Below is brief description of modules. You may skip any of the
-modules whenever you feel confident with your skills a module
-offers to master (as described in each module's **Targets**
-section).
+Временные ряды - значения параметров устройств аппаратного обеспечения, измеренных во времени.
+Формат названия - monitoringMetric$*идентификатор*_*категория периода*
+Категория периода - название периода, за который хранятся значения во временном ряду. Возможные значения - DAY, WEEK, MONTH, HALF_YEAR, INFINITE.
 
-However, check the module contents and extra materials offered
-therein before you decide to skip. You still may find something
-new or useful.
+Пример:
+ряд 'monitoringMetric$20221722__WEEK':
+<img src="./img/git-banner-1020x175.png" style="max-width: 100%; margin-left: auto; margin-right: auto;" />
