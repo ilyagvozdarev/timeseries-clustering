@@ -7,7 +7,7 @@
 
 ## Оглавление
 
-- [Данные](#data)
+- [Данные](#данные)
 - [Learning hints](#learning-hints)
 - [Extras](#extras)
 - [What's next?](#whats-next)
