@@ -1,13 +1,18 @@
 # Timeseries-clustering
 
-## Table of Contents
+Кластеризация временных рядов, отображающих значения параметров устройств аппаратного обеспечения, измеренных во времени. 
+Кластеризация производится несколькими алгоритмами кластеризации временных рядов - N2D, IDEC, K-Shape.
+Качество кластеризации оценивается по метрикам: коэффициент силуэта, Calinski-Harabasz Index, Davies-Bouldin Index.
+Оптимальное количество кластеров определяется по метрикам: коэффициент силуэта, Локтевой метод (Elbow method), статистика разрыва (gap statistic).
 
-- [Course structure](#course-structure)
+## Оглавление
+
+- [Данные](#data)
 - [Learning hints](#learning-hints)
 - [Extras](#extras)
 - [What's next?](#whats-next)
 
-## Course structure
+## Данные
 
 Below is brief description of modules. You may skip any of the
 modules whenever you feel confident with your skills a module
