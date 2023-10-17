@@ -22,4 +22,4 @@
 
 ряд 'monitoringMetric$20221722__WEEK':
 
-<img src="./img/readme/ts_example.jpg"" />
+<img src="./img/readme/ts_example.jpg" />
