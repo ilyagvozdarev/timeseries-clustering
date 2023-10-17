@@ -7,7 +7,7 @@
 - [Extras](#extras)
 - [What's next?](#whats-next)
 
-## Coudrse structure
+## Course structure
 
 Below is brief description of modules. You may skip any of the
 modules whenever you feel confident with your skills a module
