@@ -2,7 +2,7 @@
 
 ## Table of Contents
 
-- [Course sstructure](#course-structure)
+- [Course structure](#course-structureq)
 - [Learning hints](#learning-hints)
 - [Extras](#extras)
 - [What's next?](#whats-next)
