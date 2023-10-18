@@ -153,6 +153,7 @@ k-Shape основан на итерационной процедуре уточ
 <br>
 Графики метрик качества кластеризации (коэффициент силуэта, calinski harabasz score, davies bouldin score) для заданной частоты в зависимости от количества кластеров. 
 <br>
+
 <p align="center">
 <img src="img/cluster_count_metrics.jpg">
 </p>
