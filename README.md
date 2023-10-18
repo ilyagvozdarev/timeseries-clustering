@@ -73,7 +73,6 @@
 ### IDEC
 
 fdfd $f$
-
 <p align="center">
 <img src="img/idec.jpg" width=500>
 </p>
