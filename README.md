@@ -114,7 +114,6 @@ k-Shape основан на итерационной процедуре уточ
 <p align="center">
 <img src="img/centr.jpg" width=600>
 </p>
-
 <br>
 <br>
 Алгоритм кластеризации:
