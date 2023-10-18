@@ -162,7 +162,6 @@ k-Shape основан на итерационной процедуре уточ
 <p align="center">
 <img src="img/plot_silhouette.jpg">
 </p>
-
 <br>
 
 ### Графики метрик качества кластеризации
@@ -171,7 +170,6 @@ k-Shape основан на итерационной процедуре уточ
 <p align="center">
 <img src="img/cluster_count_metrics.jpg">
 </p>
-
 <br>
 
 ### Визуализация кластеров в 2-мерном пространстве
@@ -180,7 +178,6 @@ k-Shape основан на итерационной процедуре уточ
 <p align="center">
 <img src="img/visualization.jpg">
 </p>
-
 <br>
 
 ### Сгруппированные по кластерам графики рядов
