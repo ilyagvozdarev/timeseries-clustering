@@ -25,7 +25,7 @@
 
 <p align="center">
 <img src="./img/readme/ts_example.jpg" />
-</p>
+</p><br>
 
 ## Предобработка рядов
 
