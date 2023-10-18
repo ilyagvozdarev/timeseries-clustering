@@ -20,7 +20,7 @@
 Категория периода - название периода, за который хранятся значения во временном ряду. <br>Возможные значения - DAY, WEEK, MONTH, HALF_YEAR, INFINITE.
 
 Пример:<br>
-ряд 'monitoringMetric$20221722__WEEK':
+ряд "monitoringMetric$20221722__WEEK":
 
 <p align="center">
 <img src="./img/readme/ts_example.jpg" />
