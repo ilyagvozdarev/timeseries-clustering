@@ -67,7 +67,7 @@
 
 - [N2D](#n2d)
 - [IDEC](#idec)
-- [k-Shape](#k-shape)<br> 
+- [k-Shape](#k-shape)<br><br>  
 
 
 ### N2D
