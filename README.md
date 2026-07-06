@@ -1,187 +1,151 @@
 # Time series clustering
 
-Кластеризация временных рядов, отображающих значения параметров устройств аппаратного обеспечения, измеренных во времени.<br><br> 
-Кластеризация производится несколькими алгоритмами кластеризации временных рядов - N2D, IDEC, K-Shape.<br><br> 
-Качество кластеризации оценивается по метрикам: коэффициент силуэта, Calinski-Harabasz Index, Davies-Bouldin Index.<br> 
-Оптимальное количество кластеров определяется по метрикам: коэффициент силуэта, Локтевой метод (Elbow method), статистика разрыва (gap statistic).
+Clustering of time series reflecting hardware device parameter values.<br><br>
+Clustering is performed using several algorithms: [N2D](./clustering/README.md#n2d), [IDEC](./clustering/README.md#idec), and [k-Shape](./clustering/README.md#k-shape)<br>
 
-## Оглавление
+Clustering quality is evaluated using the following [metrics](./utils/README.md):
+- silhouette score
+- Calinski-Harabasz Index
+- Davies-Bouldin Index<br>
 
-- [Данные](#данные)
-- [Предобработка рядов](#предобработка-рядов)
-- [Метрики](#метрики)
-- [Методы кластеризации](#методы-кластеризации)
-- [Оценка кластеризации и визуализация](#оценка-кластеризации-и-визуализация)<br><br>
-
-## Данные
-
-Временные ряды - значения параметров устройств аппаратного обеспечения, измеренных во времени.<br><br>
-Формат названия рядов - monitoringMetric$*идентификатор*_*категория периода*<br><br>
-Категория периода - название периода, за который хранятся значения во временном ряду. <br>Возможные значения - DAY, WEEK, MONTH, HALF_YEAR, INFINITE.
-
-Пример:<br>
-ряд "monitoringMetric$20221722__WEEK":
-
-<p align="center">
-<img src="./img/readme/ts_example.jpg" />
-</p>
-
-## Предобработка рядов
-
-- удаление пустых рядов
-- усечение рядов периода до заданных границ (левая граница = медиана начального времени по всем рядам периода + 10мин<br>
-  правая граница = медиана последнего времени по всем рядам периода - 10мин)<br>
-- ресемплирование с заданной частотой<br>
-- интерполирование получаемых после ресемплирования пустых значений<br>
-- удаление пустых рядов, которые могли появиться снова после усечения<br>
-- удаление константных рядов<br>
-- minmax-масштабирование<br>
-
-**Downsampling** (уменьшение разрешения, децимация) - уменьшение частоты дискретизации временного ряда.<br>
-**Upsampling** (увеличение разрешения) - увеличение частоты дискретизации временного ряда.<br>
-**Ресемплирование** - Downsampling с последующим Upsampling. Появляющиеся в результате отсутствующие значения заполняются, например, интерполяцией.<br>
-Получаемый в результате временной ряд будет с более низким разрешением, что ускоряет вычисления.<br><br>
-
-## Метрики
-
-### Неконтролируемые метрики качества кластеризации (метки неизвестны)
-- **коэффициент силуэта**
-- **Calinski-Harabasz Index**<br>
-  Отношение суммы междукластерных дисперсий к внутрикластерным дисперсиям по всем кластерам (внутрекластерная дисперсия - сумма квадратов расстояний от точек до центров их кластеров, междукластерная дисперсия - сумма квадратов расстояний от центров кластеров до центра всех точек выборки, умноженных на количество точек в кластере).
-- **Davies-Bouldin Index**<br>
-  Среднее «сходство» между кластерами, где сходство — это мера, которая сравнивает расстояние между кластерами с размером самих   кластеров.
-
-### Метрики для выбора количества кластеров
-- **коэффициент силуэта**
-- **Локтевой метод (Elbow method)**<br>
-  Строится график зависимости суммы квадратов внутрикластерных расстояний от количества кластеров.<br>
-  Изгиб указывает на то, что дополнительные кластеры после определенного не имеют большого значения
-- **статистика разрыва (gap statistic)**<br>
-  Статистика разрыва сравнивает сумму внутрикластерных расстояний с их ожидаемыми значениями при нулевом (как правило 
-  равномерном) эталонном распределении данных.<br>
-  Делается кластеризация выборки из нулевого распределения.
-  Считается логарифм отношения суммы внутрикластерных расстояний для выборки из нулевого распределения к сумме внутрикластерных   расстояний нашей кластеризации.<br>
-  Оптимальное количество кластеров - значение, при котором статистика разрыва максимальна. Это означает, что структура кластеризации далека от случайного равномерного распределения точек.<br><br>
-
-## Методы кластеризации
-
-- [N2D](#n2d)
-- [IDEC](#idec)
-- [k-Shape](#k-shape)<br><br>  
+The optimal number of clusters is determined using:
+- silhouette score
+- elbow method
+- gap statistic
 
 
-### N2D
-- Обучаем и применяем **автоэнкодер** к необработанным данным, чтобы узнать начальные представления точек - эмбеддинги. <br>Функция потерь - MSE
-- Дообучаем полученные эмбеддинги с помощью поиска более кластеризируемых представлений  методом **UMAP** - методом обучения многообразиям, который сохраняет локальные расстояния.
-<br>UMAP - алгоритм, похожий на t-SNE, но с более сильным математическим обоснованием. При снижении размерности UMAP сначала выполняет построение взвешенного графа, соединяя ребрами только те объекты, которые являются ближайшими соседями. Множество из ребер графа — это нечёткое множество с функцией принадлежности, она определяется как вероятность существования ребра между двумя вершинами. Затем алгоритм создает граф в низкоразмерном пространстве и приближает его к исходному, минимизируя сумму дивергенций Кульбака-Лейблера для каждого ребра из множеств
-- На полученных более кластеризуемых эмбеддингах мы применяем окончательный простой алгоритм кластеризации (например **GMM (GaussianMixture)**), чтобы обнаружить кластеры.<br><br>
-
-
-### IDEC
-<p align="center">
-<img src="img/idec.jpg" width=500>
-</p>
-
-Обучаем и применяем **автоэнкодер** к необработанным данным, чтобы узнать начальные представления точек - эмбеддинги.
-
-Одновременно к выходу энкодера автоэнкодера присоединяется **слой кластеризации**, который определяет сходство эмбеддинга с каждым центром кластера.
-
-Вычисляется $q_{ij}$ - сходство между эмбеддингом точки $z_{i}$ и центром кластера $\mu_{j}$ с помощью t-распределения Стьюдента (также как в t-SNE алгоритме).
-Полученную величину можно интерпретировать как вероятность кластера j для точки i:
-
-<p align="center">
-<img src="img/qij.jpg" width=330>
-</p>
+## Preparing
+Clone repo 
+```bash
+git clone https://github.com/ilyagvozdarev/timeseries-clustering.git
+cd timeseries-clustering
+```
   
-Вычисляется $p_{ij}$ - вероятность вложенной точки $z_{i}$ в кластере $\mu_{j}$ (p называют целевым распределением):
-
-<p align="center">
-<img src="img/pij.jpg" width=280>
-</p>
+Create venv  
+```bash
+python -m venv venv
+source venv/bin/activate
+```
   
-Центры кластеров обновляются оптимизацией функции потерь - Дивергенции Кульбака-Лейблера (KL). <br>На первом шаге можно инициализировать центры любым алгоритмом, например k-means:
+Install requirements
+```bash
+pip install -r requirements.txt
+```
+
+## Run
+
+```bash
+python ts_clustering.py \
+--tss_path "data/tss.h5" \
+--method n2d \
+--method_config "model_configs/n2d_config.yml" \
+--min_clusters 10 \
+--max_clusters 15 \
+--periods DAY WEEK \
+--freqs 60 650 \
+--optim_freq \
+--threshold 0.001
+```
+
+output structure:
+```
+|- metrics
+   |- best_metrics__n2d__DAY__60s__10_12_clusters.txt
+   |- best_metrics__n2d__WEEK__60s__10_12_clusters.txt
+   |- clusters_count_metrics__n2d.csv
+   |- metrics__n2d.csv
+   |- metrics__n2d__DAY__60s__10_12_clusters.csv
+   |- metrics__n2d__WEEK__60s__10_12_clusters.csv
+|- plots
+   |- clusters
+      |- clusters__n2d__DAY__60s__10_clusters.jpg
+      |- clusters__n2d__DAY__60s__11_clusters.jpg
+      |- clusters__n2d__DAY__60s__12_clusters.jpg
+      |- clusters__n2d__WEEK__60s__10_clusters.jpg
+      ...
+   |- clusters_scatter
+      |- cluster__n2d__DAY__60s__10_clusters.html
+      |- cluster__n2d__DAY__60s__11_clusters.html
+      |- cluster__n2d__DAY__60s__12_clusters.html
+      ...
+   |- metrics__n2d.png
+   |- silhouettes__n2d__DAY__60s.png
+   |- silhouettes__n2d__WEEK__60s.png
+```
+
+## Data
+
+Series naming format - monitoringMetric$*identifier*_*period*<br><br>
+Possible values for the period over which values are stored in the time series: DAY, WEEK, MONTH, HALF_YEAR, INFINITE.
+
+Example:<br>
+series "monitoringMetric$20221722__WEEK":
 
 <p align="center">
-<img src="img/KL.jpg" width=430>
-</p>
-  
-В течении обратного распространения вычисляются градиенты L по $z_{i}$ (передаются для обновления $f_W$ (весов автоэнкодера)) и $\mu_{j}$ (используются для обновления центров кластеров $\mu_{j}$).<br><br>
-кластер объекта $i = argmax_j(q_{ij})$
-
-общая функция потерь:
-
-<p align="center">
-<img src="img/idec_loss.jpg" width=200>
+<img src="./resources/ts_example.jpg" />
 </p>
 
-$L_{r}$ - функция потерь автоэнкодера - потеря реконструкции (MSE)
-  
-$L_{c}$ - потеря кластеризации (KL)
+## Preprocessing of series
 
-$\gamma > 0$ - коэффициент контролирующий степень искажения вложенного пространства. Чем больше значение, тем эмбеддинги точек будут более кластеризируемыми и менее надежными (хуже представляют исходные ряды)
+- removal of empty series
+- for each period, keep the series (across all periods) that overlap with the interval [median start time across all series of the period + 10 min, median end time across all series of the period - 10 min]
+- resampling at the optimal frequency:
+the optimal frequency for a period is the most common optimal frequency among the series falling into that period (60sec, 650sec)
+- interpolation of NaN values produced after resampling
+- truncation to the interval boundaries (see item 2)
+- removal of empty series that may have reappeared after truncation
+- removal of constant series
+- min-max scaling
+
 <br>
-<br>
-### k-Shape
-k-Shape основан на итерационной процедуре уточнения, аналогичной той, что используется в алгоритме k-means, но со значительными отличиями. В частности, k-Shape использует другую меру расстояния и метод вычисления центроида (центр кластера), отличный от методов k-means. Мера расстояния k-Shape пытается сохранить формы временных рядов при их сравнении. Для этого k-Shape использует меру расстояния, инвариантную к масштабированию (изменение всех значений и промежутков времени в одинаковое число раз не влияет на меру расстояния) и смещению (изменение сдвига одного ряда относительно другого не влияет на меру расстояния) - Shape-based distance (SBD).
-<br>**Shape-based distance (SBD)** - мера которая тем меньше чем больше нормированное по автокорреляциям рядов максимальное (по всем сдвигам одного ряда относительно другого) значение кросс-корреляции рядов:
-<p align="center">
-<img src="img/SBD.jpg">
-</p>
-В k-means центроид (центр кластера) вычисляется как средняя последовательность из набора последовательностей — вычисление каждой координаты средней последовательности как среднее арифметическое соответствующих координат всех последовательностей.
-<br>
-В k-Shape вычисление центроида является задачей оптимизации, цель которой состоит в том, чтобы найти такую последовательность, что сумма квадратов расстояний (по мере SBD) до всех других последовательностей временных рядов будет максимальной:
-<p align="center">
-<img src="img/centr.jpg" width=600>
-</p>
-<br>
-Алгоритм кластеризации:
+Algorithm for computing the optimal frequency:
 
-На каждой итерации k-Shape выполняет два шага: 
-- на этапе назначения алгоритм для каждого ряда обновляет принадлежность кластеру, сравнивая каждый временной ряд со всеми вычисленными центроидами и назначая каждый временной ряд кластеру ближайшего центроида, используется мера расстояния SBD для определения принадлежности кластеру 
-- на этапе уточнения центроиды кластеров обновляются, чтобы отразить изменения в составе кластеров на предыдущем этапе.
+1. Resample the input series at a frequency equal to the median frequency
+2. Build a grid of frequencies from the median frequency to the maximum possible frequency (1 day), with a specified number of elements in the grid
+3. Use binary search over the grid to find the largest downsampling frequency — the frequency at which the resampled series (downsampling + upsampling back to the original median frequency) has the largest error that is still below a specified threshold
+<br>Error - MSE(original series, resampled series) / MSE(original series, baseline series), baseline downsampling frequency = 86400 sec (1 day)
 
-Алгоритм повторяет эти два шага до тех пор, пока либо не произойдет никаких изменений в составе кластеров, либо не будет достигнуто максимально допустимое количество итераций.<br><br>
+The purpose is maximum data compression (without quality loss below the specified threshold) to speed up further clustering.
+<br><br>
 
 
-## Оценка кластеризации и визуализация
+## Clustering Evaluation and Visualization
 
+- [Silhouette Score Plot](#silhouette-score-plot-and-cluster-visualization-in-2d-space)
+- [Clustering Quality Metrics Plots](#clustering-quality-metrics-plots)
+- [Cluster Visualization in 2D Space](#cluster-visualization-in-2d-space)
+- [Series Plots Grouped by Cluster](#series-plots-grouped-by-cluster)<br>
 
-- [График коэффициента силуэта](#график-коэффициента-силуэта-и-визуализация-кластеров-в-2-мерном-пространстве)
-- [Визуализация кластеров в 2-мерном пространстве](#график-коэффициента-силуэта-и-визуализация-кластеров-в-2-мерном-пространстве)
-- [Графики метрик качества кластеризации](#графики-метрик-качества-кластеризации)
-- [Визуализация кластеров в 2-мерном пространстве](#визуализация-кластеров-в-2-мерном-пространстве)
-- [Сгруппированные по кластерам графики рядов](#сгруппированные-по-кластерам-графики-рядов)<br><br>
+#### Silhouette Score Plot and Cluster Visualization in 2D Space
 
-### График коэффициента силуэта и визуализация кластеров в 2-мерном пространстве
-Для каждой кластеризации (по количеству кластеров) строится график значения коэффициента силуэта для всех точек каждого кластера: точки кластера расположены по вертикальной оси, правый край отрезка показывает значение коэффициента силуэта для точки (левый график).
-Пунктирная линия - среднее (по всей выборке) значение коэффициента силуэта.
-
-Также строится визуализация кластеров в 2-мерном пространстве (размерность эмбеддингов рядов), точки окрашены в цвет своего кластера (правый график)
+left plot: for each cluster, silhouette coefficient values for all points in the cluster; points are arranged along the vertical axis, the right edge of each bar shows the silhouette coefficient value for that point. The dashed line shows the mean silhouette coefficient across all points.<br>
+right plot: points in 2D space colored according to their cluster.<br>
+dashed line: is the mean silhouette coefficient value (over all points)<br>
 
 <p align="center">
-<img src="img/plot_silhouette.jpg">
+<img src="resources/plot_silhouette.jpg">
 </p>
 
 
-### Графики метрик качества кластеризации
-Графики значений метрик качества кластеризации (коэффициент силуэта, calinski harabasz score, davies bouldin score) в зависимости от количества кластеров для заданной частоты: 
+#### Clustering Quality Metrics Plots
+Plots of clustering quality metric values (silhouette score, Calinski-Harabasz score, Davies-Bouldin score) as a function of the number of clusters for a given frequency:
 <br><br>
 <p align="center">
-<img src="img/cluster_count_metrics.jpg">
+<img src="resources/cluster_count_metrics.jpg">
 </p>
 
 
-### Визуализация кластеров в 2-мерном пространстве
-Визуализация кластеров в 2-мерном пространстве (размерность эмбеддингов рядов) для определенной частоты и кластеризации:
+#### Cluster Visualization in 2D Space
+Visualization of clusters in 2D space for a specific frequency and clustering:
 <br>
 <p align="center">
-<img src="img/visualization.jpg">
+<img src="resources/cluster_scatter.gif">
 </p>
 
 
-### Сгруппированные по кластерам графики рядов
-Графики рядов, сгруппированные по кластерам (столбцам), для заданной кластеризации (число кластеров), модели, частоты и периода:
+#### Series Plots Grouped by Cluster
+Plots of series grouped by cluster (columns), for a given clustering (number of clusters), model, frequency, and period:
 <br>
 <p align="center">
-<img src="img/clusters.jpg">
+<img src="resources/clusters.jpg">
 </p>

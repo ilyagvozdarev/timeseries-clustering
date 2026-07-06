@@ -1,0 +1,3 @@
+max silhouette          10 clusters   0.44568291306495667
+max calinski_harabasz   12 clusters   4771.559828071299
+min davies_bouldin      10 clusters   0.6250480010814419
