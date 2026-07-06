@@ -1,5 +1,7 @@
 # Time series clustering
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1a8AHaMQq95fzotLvxKV9JsX2UseTcJwn?usp=sharing)
+
 Clustering of time series reflecting hardware device parameter values.<br><br>
 Clustering is performed using several algorithms: [N2D](./clustering/README.md#n2d), [IDEC](./clustering/README.md#idec), and [k-Shape](./clustering/README.md#k-shape)<br>
 
