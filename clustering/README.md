@@ -6,19 +6,19 @@
 - Train an **autoencoder** (reconstruction) that takes input series with latent_dim equal to the number of clusters, obtaining initial series embeddings. <br>Loss function - MSE
 - Fine-tune the resulting embeddings by searching for more clusterable embeddings using the **UMAP** method - a manifold learning method that preserves local distances.
 <br>UMAP is an algorithm similar to t-SNE, but with a stronger mathematical foundation.
-- On the resulting more clusterable embeddings, we apply a final simple clustering algorithm (e.g. **GMM (GaussianMixture)**) to detect the clusters. 
-<br>
-<br>
+- On the resulting more clusterable embeddings, we apply a final simple clustering algorithm (e.g. **GMM (GaussianMixture)**) to detect the clusters. <br>
+
 ### IDEC
 [https://www.ijcai.org/proceedings/2017/0243.pdf](https://www.ijcai.org/proceedings/2017/0243.pdf)<br>
 [https://github.com/XifengGuo/IDEC](https://github.com/XifengGuo/IDEC)
+
 <img src="../resources/idec.jpg" width="500" height="280">
 
 - Train an **autoencoder** (reconstruction) that takes input series with latent_dim equal to the number of clusters, obtaining initial series embeddings. <br>Loss function - MSE
 - Simultaneously, a **clustering layer** is attached to the output of the autoencoder's encoder, which determines the similarity of the embedding to each cluster center.
 
 <br>$q_{ij}$ is computed - the similarity between the embedding of point $z_{i}$ and cluster center $\mu_{j}$, calculated using the Student's t-distribution (as in the t-SNE algorithm). <br>The resulting value can be interpreted as the probability of cluster j for point i:
-<br>
+
 $$q_{ij} = \frac{(1 + \|z_i - \mu_j\|^2)^{-1}}{\sum_j (1 + \|z_i - \mu_j\|^2)^{-1}}$$
 <br>$p_{ij}$ is computed - the target distribution, built from the same $q_{ij}$:
 $$p_{ij} = \frac{q_{ij}^2 / \sum_i q_{ij}}{\sum_j \left( q_{ij}^2 / \sum_i q_{ij} \right)}$$
@@ -60,10 +60,9 @@ In k-means, the centroid (cluster center) is computed as the mean of the points.
 In k-Shape, computing the centroid is an optimization task whose goal is to find a point such that the sum of squared distances (using the SBD measure) to all other points (time series) is maximized:
 
 
-$$\vec{\mu_k}^{\star} = \operatorname*{argmax}_{\vec{\mu_k}} \sum_{\vec{x_i} \in P_k} NCC_c(\vec{x_i}, \vec{\mu_k})^2$$
+$$\vec{\mu_k}^{\star} = \underset{\vec{\mu_k}}{\text{argmax}} \sum_{\vec{x_i} \in P_k} NCC_c(\vec{x_i}, \vec{\mu_k})^2$$
 
-$$= \operatorname*{argmax}_{\vec{\mu_k}} \sum_{\vec{x_i} \in P_k} \left( \frac{\max_w CC_w(\vec{x_i}, \vec{\mu_k})}{\sqrt{R_0(\vec{x_i}, \vec{x_i}) \cdot R_0(\vec{\mu_k}, \vec{\mu_k})}} \right)^2$$
-
+$$= \underset{\vec{\mu_k}}{\text{argmax}} \sum_{\vec{x_i} \in P_k} \left( \frac{\max_w CC_w(\vec{x_i}, \vec{\mu_k})}{\sqrt{R_0(\vec{x_i}, \vec{x_i}) \cdot R_0(\vec{\mu_k}, \vec{\mu_k})}} \right)^2$$
 
 At each iteration, k-Shape performs two steps:
 - during the assignment step, the algorithm updates the cluster assignment for each series by comparing it to all computed centroids and assigning it to the cluster of the nearest centroid, using the SBD distance measure to determine cluster assignment
