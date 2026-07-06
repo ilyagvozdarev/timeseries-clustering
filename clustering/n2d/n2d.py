@@ -45,9 +45,9 @@ class AutoEncoder:
         n_stacks = len(self.dims) - 1
         for i in range(n_stacks - 1):
             self.h = Dense(
-                self.dims[i + 1], activation=self.act, name='encoder_%d' % i)(self.h)   #(self.h) - слой с которым связываемся
+                self.dims[i + 1], activation=self.act, name='encoder_%d' % i)(self.h)
         self.encoder = Dense(
-            self.dims[-1], name='encoder_%d' % (n_stacks - 1))(self.h)   #(self.h) - слой с которым связываемся (после которого встаем)
+            self.dims[-1], name='encoder_%d' % (n_stacks - 1))(self.h)
         self.decoded = Dense(
             self.dims[-2], name='decoder', activation=self.act)(self.encoder)
         for i in range(n_stacks - 2, 0, -1):
@@ -55,8 +55,8 @@ class AutoEncoder:
                 self.dims[i], activation=self.act, name='decoder_%d' % i)(self.decoded)
         self.decoded = Dense(self.dims[0], name='decoder_0')(self.decoded)
 
-        self.Model = Model(inputs=self.x, outputs=self.decoded)  # полная модель автоэнкодера (энкодер + декодер)
-        self.encoder = Model(inputs=self.x, outputs=self.encoder) # только часть энкодера
+        self.Model = Model(inputs=self.x, outputs=self.decoded)
+        self.encoder = Model(inputs=self.x, outputs=self.encoder)
 
     def fit(self, x, batch_size, epochs,
             loss, optimizer, weights,
@@ -395,8 +395,8 @@ class n2d:
             n_clusters: number of clusters.
         """     
         y = np.asarray(y)
-        y_pred = np.asarray(self.preds)    # кластеры
-        hle = self.hle                     # эмбеддинги
+        y_pred = np.asarray(self.preds)
+        hle = self.hle                 
         plot(hle, y, 'n2d', names,  n_clusters=n_clusters)   # color the dots according to the true class.
         y_pred_viz, _, _ = best_cluster_fit(y, y_pred)       # The Hungarian algorithm for finding the best 
                                                              # match between class labels and cluster labels.

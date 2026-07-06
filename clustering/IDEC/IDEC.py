@@ -19,6 +19,25 @@ Author:
     Xifeng Guo. 2017.4.30
 """
 
+"""
+# This file is adapted from N2D (rymc/n2d)
+# https://github.com/rymc/n2d
+# Original paper: McConville et al., "N2D: (Not Too) Deep Clustering via
+# Clustering the Local Manifold of an Autoencoded Embedding", ICPR 2020
+#
+# Copyright (C) 2020 Ryan McConville
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+"""
+
 from time import time
 import numpy as np
 from keras.models import Model
