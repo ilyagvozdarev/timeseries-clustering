@@ -207,9 +207,11 @@ class UmapGMM:
         y_pred = y_prob.argmax(1)
         return(np.asarray(y_pred))
 
-# считает матрицу ошибок (wij = сколько раз объект принадлежит i-кластеру и j-классу)
-    
+
 def best_cluster_fit(y_true, y_pred):
+    '''
+    calculates error matrix (wij = number of times an object belongs to the i-cluster and j-class)
+    '''
     y_true = y_true.astype(np.int64)
     D = max(y_pred.max(), y_true.max()) + 1
     w = np.zeros((D, D), dtype=np.int64)
@@ -234,7 +236,7 @@ def plot(x, y, plot_id, names=None, n_clusters=10):
     viz_df = pd.DataFrame(data=x[:5000])
     viz_df['Label'] = y[:5000]
     if names is not None:
-        viz_df['Label'] = viz_df['Label'].map(names)    #номер класса объекта преобразуем в название класса
+        viz_df['Label'] = viz_df['Label'].map(names)
     plt.subplots(figsize=(8, 5))
     sns.scatterplot(x=0, y=1, hue='Label', legend='full', hue_order=sorted(viz_df['Label'].unique()), 
                     palette=sns.color_palette("hls", n_colors=n_clusters),
@@ -341,7 +343,7 @@ class n2d:
                              loss=loss,
                              optimizer=optimizer, weights=weights,
                              verbose=verbose, weight_id=weight_id, patience=patience)
-        hl = self.encoder.predict(x)   # получаем представления (их формирует только энкодер)
+        hl = self.encoder.predict(x)  
         self.manifold_learner.fit(hl)
 
     def predict(self, x):
@@ -395,13 +397,10 @@ class n2d:
         y = np.asarray(y)
         y_pred = np.asarray(self.preds)    # кластеры
         hle = self.hle                     # эмбеддинги
-        plot(hle, y, 'n2d', names,  n_clusters=n_clusters)   # рисуем точки цветом в соответствии с истинным классом
-        y_pred_viz, _, _ = best_cluster_fit(y, y_pred)       # Венгерский алгоритм для поиска наилучшего сопоставления
-                                                             # меток классов и меток кластеров.
-        #рисуем точки цветом в соответствии с кластером
+        plot(hle, y, 'n2d', names,  n_clusters=n_clusters)   # color the dots according to the true class.
+        y_pred_viz, _, _ = best_cluster_fit(y, y_pred)       # The Hungarian algorithm for finding the best 
+                                                             # match between class labels and cluster labels.
         plot(hle, y_pred_viz, 'n2d-predicted', names,  n_clusters=n_clusters)
-
-
 
 
 def save_n2d(obj, encoder_id, manifold_id):

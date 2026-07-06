@@ -32,12 +32,10 @@ from sklearn.cluster import KMeans
 from sklearn import metrics
 
 
-# считает матрицу ошибок (wij = сколько раз объект принадлежит i-кластеру и j-классу)
-# и возвращает accuracy - долю правильных назначений кластерам ко всем назначениям
-
 def cluster_acc(y_true, y_pred):
     """
-    Calculate clustering accuracy. Require scikit-learn installed
+    calculates the error matrix (wij = number of times an object belongs to the i-cluster and j-class)
+    and clustering accuracy. Require scikit-learn installed
 
     # Arguments
         y: true labels, numpy.array with shape `(n_samples,)`
@@ -52,7 +50,8 @@ def cluster_acc(y_true, y_pred):
     w = np.zeros((D, D), dtype=np.int64)
     for i in range(y_pred.size):
         w[y_pred[i], y_true[i]] += 1
-    from scipy.optimize import linear_sum_assignment as linear_assignment     # Венгерский алгоритм для поиска наилучшего распространения
+    # Hungarian algorithm for finding the best matching
+    from scipy.optimize import linear_sum_assignment as linear_assignment     
     ind = zip(*linear_assignment(w.max() - w))
 
     return sum([w[i, j] for i, j in ind]) * 1.0 / y_pred.size
@@ -119,9 +118,6 @@ class ClusteringLayer(Layer):
         self.input_spec = InputSpec(ndim=2)
 
     def build(self, input_shape):
-        
-        # print("\n build build\n")
-        
         assert len(input_shape) == 2
         input_dim = input_shape[1]
         self.input_spec = InputSpec(dtype=K.floatx(), shape=(None, input_dim))
@@ -185,7 +181,7 @@ class DEC(object):
 
     def pretrain(self, x, batch_size=256, epochs=200, optimizer='adam'):
         print('...Pretraining...')
-        self.autoencoder.compile(loss='mse', optimizer=optimizer)  # SGD(lr=0.01, momentum=0.9),  # конфигурируем модель для обучения
+        self.autoencoder.compile(loss='mse', optimizer=optimizer)
         self.autoencoder.fit(x, x, batch_size=batch_size, epochs=epochs)
         self.autoencoder.save_weights('ae_weights.h5')
         print('Pretrained weights are saved to ./ae_weights.h5')
@@ -251,7 +247,7 @@ class DEC(object):
 
                 # evaluate the clustering performance
                 self.y_pred = q.argmax(1)
-                if y is not None:       # если есть истинные метки
+                if y is not None:       # if there are ground truth
                     acc = np.round(cluster_acc(y, self.y_pred), 5)
                     nmi = np.round(metrics.normalized_mutual_info_score(y, self.y_pred), 5)
                     ari = np.round(metrics.adjusted_rand_score(y, self.y_pred), 5)
@@ -261,7 +257,7 @@ class DEC(object):
                           % (ite, acc, nmi, ari, loss))
 
                 # check stop criterion
-                # доля объектов у которых изменились кластеры с прошлой итерации обучения
+                # proportion of objects whose clusters have changed since the previous training iteration
                 delta_label = np.sum(self.y_pred != y_pred_last).astype(np.float32) / self.y_pred.shape[0]   
                 y_pred_last = np.copy(self.y_pred)
                 if ite > 0 and delta_label < tol:
@@ -294,64 +290,3 @@ class DEC(object):
         self.model.save_weights(save_dir + '/DEC_model_final.h5')
 
         return self.y_pred
-
-
-#if __name__ == "__main__":
-#
-#    # setting the hyper parameters
-#    import argparse
-#
-#    parser = argparse.ArgumentParser(description='train',
-#                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-#    parser.add_argument('dataset', default='mnist', choices=['mnist', 'usps', 'reutersidf10k', 'pendigits'])
-#    parser.add_argument('--n_clusters', default=10, type=int)
-#    parser.add_argument('--batch_size', default=256, type=int)
-#    parser.add_argument('--maxiter', default=2e4, type=int)
-#    parser.add_argument('--pretrain_epochs', default=200, type=int)
-#    parser.add_argument('--gamma', default=0.1, type=float,
-#                        help='coefficient of clustering loss')
-#    parser.add_argument('--update_interval', default=0, type=int)
-#    parser.add_argument('--tol', default=0.001, type=float)
-#    parser.add_argument('--ae_weights', default=None)
-#    parser.add_argument('--save_dir', default='results/dec')
-#    args = parser.parse_args()
-#    print(args)
-#
-#    # load dataset
-#    optimizer = 'adam'  # SGD(lr=0.01, momentum=0.99)
-#    from datasets import load_mnist, load_reuters, load_usps, load_pendigits
-#
-#    if args.dataset == 'mnist':  # recommends: n_clusters=10, update_interval=140
-#        x, y = load_mnist()
-#    elif args.dataset == 'usps':  # recommends: n_clusters=10, update_interval=30
-#        x, y = load_usps('data/usps')
-#    elif args.dataset == 'pendigits':
-#        x, y = load_pendigits('data/pendigits')
-#    elif args.dataset == 'reutersidf10k':  # recommends: n_clusters=4, update_interval=20
-#        x, y = load_reuters('data/reuters')
-#
-#    if args.update_interval == 0:  # one epoch. A smaller value may correspond to higher performance
-#        args.update_interval = int(x.shape[0]/args.batch_size)
-#
-#    # Define DEC model
-#    dec = DEC(dims=[x.shape[-1], 500, 500, 2000, 10], n_clusters=args.n_clusters)
-#    plot_model(dec.model, to_file='dec_model.png', show_shapes=True)
-#    dec.model.summary()
-#
-#    t0 = time()
-#
-#    # Pretrain autoencoders before clustering
-#    if args.ae_weights is None:
-#        dec.pretrain(x, batch_size=args.batch_size, epochs=args.pretrain_epochs, optimizer=optimizer)
-#
-#    # begin clustering, time not include pretraining part.
-#
-#    dec.compile(loss='kld', optimizer=optimizer)
-#    dec.fit(x, y=y, batch_size=args.batch_size, tol=args.tol, maxiter=args.maxiter,
-#            update_interval=args.update_interval, ae_weights=args.ae_weights, save_dir=args.save_dir)
-#
-#    # Show the final results
-#    y_pred = dec.y_pred
-#    print('acc:', cluster_acc(y, y_pred))
-#    print('clustering time: %d seconds.' % int(time() - t0))
-
