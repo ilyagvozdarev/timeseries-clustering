@@ -89,8 +89,8 @@ series "monitoringMetric$20221722__WEEK":
 
 - removal of empty series
 - for each period, keep the series (across all periods) that overlap with the interval [median start time across all series of the period + 10 min, median end time across all series of the period - 10 min]
-- resampling at the optimal frequency:
-the optimal frequency for a period is the most common optimal frequency among the series falling into that period (60sec, 650sec)
+- resampling at the optimal frequency:<br>
+the optimal frequency for a period is the most common optimal frequency among the series falling into that period
 - interpolation of NaN values produced after resampling
 - truncation to the interval boundaries (see item 2)
 - removal of empty series that may have reappeared after truncation
